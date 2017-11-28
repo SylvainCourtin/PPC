@@ -1,0 +1,16 @@
+#des notes utiles !
+
+Le 0 dans les HAUT et BAS signifie qu'il n'y aura aucune connexion 
+
+
+On part du principe suivant, une barre horizontal ce trouve sur le NORD de la plaque
+Alors que la barre vertical, ce trouve sur le SUD de la plaque (je parle des plaques de soudures ^^)
+
+
+La question est : Ou je mets ma barre horizontal sur ma plaque ?
+
+
+Contrainte :
+-Si j'ai deux branches qui se croisent, vérifier que l'un est vertical et l'autre est horizontal
+-Vérifier que des liaisons existent et se rejoigne bien (sauf pour 0 bien sur ^^)
+-/!\ un peu plus dure mais dans les exemples nous pouvons avoir deux liaisons vers une seule en haut ! vérifier qu'il se rejoigne bien
