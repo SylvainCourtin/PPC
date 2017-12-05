@@ -14,3 +14,15 @@ Contrainte :
 -Si j'ai deux branches qui se croisent, vérifier que l'un est vertical et l'autre est horizontal
 -Vérifier que des liaisons existent et se rejoigne bien (sauf pour 0 bien sur ^^)
 -/!\ un peu plus dure mais dans les exemples nous pouvons avoir deux liaisons vers une seule en haut ! vérifier qu'il se rejoigne bien
+
+le dog-leg c'est avoir deux sur l'horizontal mais sur deux niveaux différents ! (genre l'un en haut l'autre en bas)
+
+
+représentation :
+
+une matrice avec comme chaque élément un ensemble d'élément (limité à 2)
+exemple :
+
+matrice[x,y] = {u,v};
+matrice[x1,y1] = {v};
+etc...
