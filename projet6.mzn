@@ -18,15 +18,15 @@ array[1..N] of int:BAS;
 array[COLS,ROWS] of var set of COLS: plaque;
 
 %On limite le nbr d'élément à 2  (un croisement horizontal et l'autre vertical max)
-constraint forall(i,j in plaque)(card(plaque[i,j]) <= 2);
+constraint forall(i in COLS, j in ROWS)(card(plaque[i,j]) <= 2);
 
 %On vérifie que le croisement ne continue pas sur la suite
-constraint forall(i in 1..N-1, j in 1..M-1)(
+constraint forall(i in 2..N-1, j in 2..M-1)(
     card(plaque[i,j]) == 2 /\ 
-   (plaque[i,j] intersect plaque[i-1,j] == 1) /\
-   (plaque[i,j] intersect plaque[i+1,j] == 1) /\
-    (plaque[i,j] intersect plaque[i,j-1] == 1) /\
-    (plaque[i,j] intersect plaque[i,j+1] == 1)
+   card(plaque[i,j] intersect plaque[i-1,j]) == 1 /\
+   card(plaque[i,j] intersect plaque[i+1,j]) == 1 /\
+    card(plaque[i,j] intersect plaque[i,j-1]) == 1 /\
+    card(plaque[i,j] intersect plaque[i,j+1])== 1
   );
 
 solve satisfy;
