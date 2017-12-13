@@ -4,8 +4,6 @@ include "globals.mzn";
 %Dims MxN
 int:M; 
 int:N;
-int:NIVEAU=2;
-
 set of int:COLS= 1..N;
 set of int:ROWS= 1..M;
 
@@ -36,6 +34,10 @@ constraint forall(n in COLS)(
 );
 constraint forall(n in COLS)(
   BAS[n] == 0 \/ BAS[n] in plaque[n,M]
+);
+
+%On vérifie qu'il n'y a pas plus de deux lignes horizontal (cas no dog-legs) pour une liaison
+constraint forall()(
 );
 
 solve satisfy;
