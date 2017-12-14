@@ -101,16 +101,6 @@ predicate mesVoisinsDroite(var int:a, int:i,int:j) =
 %On trace un chemin, on vérifie que pour une liaison il a exactement 2 voisins (comme le début est fixé ça devrait pas poser de soucis)
 %le but est de vérifier pour une point donner, qu'il a uniquement 2 voisins et se dirige donc vers une direction
 constraint forall(j in 2..N-1, i in 2..MCOMPLET-1)(
-  /*(plaque[i,j] intersect plaque[i-1,j] == plaque[i,j] intersect plaque[i+1,j] )  xor % 
-  (plaque[i,j] intersect plaque[i,j-1] == plaque[i,j] intersect plaque[i,j+1] ) xor %
-  
-  (plaque[i,j] intersect plaque[i-1,j] == plaque[i,j] intersect plaque[i,j+1] ) xor %droite + bas
-  (plaque[i,j] intersect plaque[i-1,j] == plaque[i,j] intersect plaque[i,j-1] ) xor  %droite + haut
-  
-  (plaque[i,j] intersect plaque[i+1,j] == plaque[i,j] intersect plaque[i,j+1] ) xor %gauche + bas
-  (plaque[i,j] intersect plaque[i+1,j] == plaque[i,j] intersect plaque[i,j-1] )   %gauche + haut
-  
-  */
   forall(elem in 1..MAX)( %au final je parcours tout les elements et je vérifie qu'il est dedans pour parcourir le set (ps : je n'ai pas trouvé de fonction donc c'est temporaire)
     if elem in plaque[i,j] then mesVoisins(elem,i,j) else true endif
    )
@@ -119,22 +109,12 @@ constraint forall(j in 2..N-1, i in 2..MCOMPLET-1)(
 %la on fait de même mais en vérifiant les bords
 constraint forall(i in 2..MCOMPLET-1)( 
   %bord gauche
-  /*
-   (plaque[i,1] intersect plaque[i-1,1] == plaque[i,1] intersect plaque[i+1,1] ) xor %vertical
-   (plaque[i,1] intersect plaque[i-1,1] == plaque[i,1] intersect plaque[i,2] ) xor %bas droite
-   (plaque[i,1] intersect plaque[i+1,1] == plaque[i,1] intersect plaque[i,2] ) %haut droite
-   */
    forall(elem in 1..MAX)( 
     if elem in plaque[i,1] then mesVoisinsGauche(elem,i,1) else true endif
    )
 );
 constraint forall(i in 2..MCOMPLET-1)(   
   %bord droit
-  /*
-   (plaque[i,N] intersect plaque[i-1,N] == plaque[i,N] intersect plaque[i+1,N] ) xor %vertical
-   (plaque[i,N] intersect plaque[i-1,N] == plaque[i,N] intersect plaque[i,N-1] ) xor %bas gauche
-   (plaque[i,N] intersect plaque[i+1,N] == plaque[i,N] intersect plaque[i,N-1] ) %haut gauche
-   */
    forall(elem in 1..MAX)(
     if elem in plaque[i,N] then mesVoisinsDroite(elem,i,N) else true endif
    )
