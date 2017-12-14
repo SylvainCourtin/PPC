@@ -4,57 +4,92 @@ include "globals.mzn";
 %Dims MxN
 int:M; 
 int:N;
-set of int:COLS= 1..N;
-set of int:ROWS= 1..M;
+%On intègre le HAUT et le BAS à la matrice
+int:MCOMPLET=M+2;
 
-%Le 0 indique qu'il n'est pas utilisé
-array[1..N] of int:HAUT;
-array[1..N] of int:BAS;
+set of int:COLS= 1..MCOMPLET;% ->
+set of int:ROWS= 1..N;% ↓
+
+int: NBHORIZONTALMAX=1;
+
+%La valeur 0 indique qu'il n'est pas utilisé
+array[ROWS] of int:HAUT;
+array[ROWS] of int:BAS;
+
+int:MAX=max(max(HAUT),max(BAS));
 
 %Variables
  
-array[COLS,ROWS] of var set of COLS: plaque;
+array[COLS,ROWS] of var set of 0..MAX: plaque;
+
+%init
+constraint forall(i in ROWS)(
+  (HAUT[i] in plaque[1,i] /\ card(plaque[1,i]) == 1)
+);
+constraint forall(i in ROWS)(
+  (BAS[i] in plaque[MCOMPLET,i] /\ card(plaque[MCOMPLET,i]) == 1)
+);
 
 %On limite le nbr d'élément à 2  (un croisement horizontal et l'autre vertical max)
-constraint forall(i in COLS, j in ROWS)(card(plaque[i,j]) in 0..2);
+constraint forall(i in COLS, j in ROWS where i!=1 /\ i!= MCOMPLET)(card(plaque[i,j]) <= 2);
 
-%On vérifie que le croisement ne continue pas sur la suite
-constraint forall(i in 2..N-1, j in 2..M-1)(
-    card(plaque[i,j]) == 2 /\ 
+%On vérifie que le croisement ne continue pas sur la suite (on veut une + en croisement)
+constraint forall(j in 2..N-1, i in 3..MCOMPLET-2)(
+    if card(plaque[i,j]) == 2 then
    card(plaque[i,j] intersect plaque[i-1,j]) == 1 /\
    card(plaque[i,j] intersect plaque[i+1,j]) == 1 /\
     card(plaque[i,j] intersect plaque[i,j-1]) == 1 /\
     card(plaque[i,j] intersect plaque[i,j+1]) == 1
+    else true endif
   );
-
-%Maintenant on vérifie qu'il existe bien un chemin / trace un chemin
-% nous avons FORCEMENT le début au niveau de chaque réseau
-constraint forall(n in COLS)(
-  HAUT[n] == 0 \/ HAUT[n] in plaque[n,1]
-);
-constraint forall(n in COLS)(
-  BAS[n] == 0 \/ BAS[n] in plaque[n,M]
-);
-
-predicate mesVoisins(var int:a, int:i,int:j) = 
-  (bool2int(a in plaque[i+1,j] ) + bool2int(a in plaque[i,j+1]) + bool2int(a in plaque[i-1,j] ) + bool2int(a in plaque[i,j-1]) ) == 2;
   
-%On trace un chemin, on vérifie que pour une liaison il a exactement 2 voisins (comme le début est fixé ça devrait pas poser de soucis
-%constraint forall(i in 2..N-1, j in 2..M-1)(   mesVoisins([a | a in plaque[i,j]] ,i,j));
- 
- 
+%je relis le début
+constraint forall(j in ROWS)(
+  HAUT[j] == 0 \/ HAUT[j] in plaque[2,j]
+);
 
+constraint forall(j in ROWS)(
+  BAS[j] == 0 \/ BAS[j] in plaque[MCOMPLET-1,j]
+);
+
+%on retire le 0
+constraint forall(i in 2..MCOMPLET-1, j in ROWS)
+(   plaque[i,j] diff {0} == plaque[i,j]
+);
+var 1..MAX : elem;
+%On trace un chemin, on vérifie que pour une liaison il a exactement 2 voisins (comme le début est fixé ça devrait pas poser de soucis
+constraint forall(j in 2..N-1, i in 2..MCOMPLET-1)(
+  plaque[i,j] intersect plaque[i-1,j] == plaque[i,j] intersect plaque[i+1,j]  \/ % 
+  plaque[i,j] intersect plaque[i,j-1] == plaque[i,j] intersect plaque[i,j+1] \/ %
+  
+  plaque[i,j] intersect plaque[i-1,j] == plaque[i,j] intersect plaque[i,j+1] \/ %droite + bas
+  plaque[i,j] intersect plaque[i-1,j] == plaque[i,j] intersect plaque[i,j-1] \/  %droite + haut
+  
+  plaque[i,j] intersect plaque[i+1,j] == plaque[i,j] intersect plaque[i,j+1] \/ %gauche + bas
+  plaque[i,j] intersect plaque[i+1,j] == plaque[i,j] intersect plaque[i,j-1]   %gauche + haut
+);
+
+%la on fait de même mais en vérifiant les bords
+constraint forall(i in 2..MCOMPLET-1)( 
+  %bord gauche
+   plaque[i,1] intersect plaque[i-1,1] == plaque[i,1] intersect plaque[i+1,1] \/ %vertical
+   plaque[i,1] intersect plaque[i-1,1] == plaque[i,1] intersect plaque[i,2] \/ %bas droite
+   plaque[i,1] intersect plaque[i+1,1] == plaque[i,1] intersect plaque[i,2] %haut droite
+);
+
+constraint forall(i in 2..MCOMPLET-1)(   
+  %bord droit
+   plaque[i,N] intersect plaque[i-1,N] == plaque[i,N] intersect plaque[i+1,N] \/ %vertical
+   plaque[i,N] intersect plaque[i-1,N] == plaque[i,N] intersect plaque[i,N-1] \/ %bas gauche
+   plaque[i,N] intersect plaque[i+1,N] == plaque[i,N] intersect plaque[i,N-1] %haut gauche
+);
 
 %On vérifie qu'il n'y a pas plus de deux lignes horizontal (cas no dog-legs) pour une liaison
-array[1..max(max(HAUT),max(BAS))] of var int : liaison;
+array[1..MAX] of var 0..2 : liaison;
 %on compte le nbr d'horizontal par liaison
-constraint forall(i in 2..M-1, j in COLS)(
-  card(plaque[i,j] intersect plaque[i+1,j]) == 1 /\ card(plaque[i,j] intersect plaque[i-1,j]) == 0
-  /\ liaison[max(plaque[i,j] intersect plaque[i+1,j])]=1 + liaison[max(plaque[i,j] intersect plaque[i+1,j])]  %je fais max car il n'y a qu'un seul set et je ne sais pas comment le recup ...
-);
+%constraint forall(i in ROWS, j in COLS)(  plaque[i,j]);
 %pas plus de deux horizontal par liaison
-constraint forall(i in 1..max(max(HAUT),max(BAS)))(
-  liaison[i] < 2
-);
+%constraint forall(i in 1..max(max(HAUT),max(BAS)))( liaison[i] <= NBHORIZONTALMAX);
 
 solve satisfy;
+output[if j==N then show(plaque[i,j])++"\n" else show(plaque[i,j])++"," endif | i in COLS, j in ROWS];
