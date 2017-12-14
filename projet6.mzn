@@ -56,35 +56,43 @@ constraint forall(j in ROWS)(
 constraint forall(i in 2..MCOMPLET-1, j in ROWS)
 (   plaque[i,j] diff {0} == plaque[i,j]
 );
+
+/***          CETTE CONTRAINTE NE FONCTIONNE PAS CORRECTEMENT                      ***/
 %On trace un chemin, on vérifie que pour une liaison il a exactement 2 voisins (comme le début est fixé ça devrait pas poser de soucis)
+%le but est de vérifier pour une point donner, qu'il a uniquement 2 voisins et se dirige donc vers une direction
 constraint forall(j in 2..N-1, i in 2..MCOMPLET-1)(
-  (plaque[i,j] intersect plaque[i-1,j] == plaque[i,j] intersect plaque[i+1,j] \/ card(plaque[i,j] intersect plaque[i-1,j]) == 1)  xor % 
-  (plaque[i,j] intersect plaque[i,j-1] == plaque[i,j] intersect plaque[i,j+1] \/ card(plaque[i,j] intersect plaque[i,j+1]) == 1) xor %
+  (plaque[i,j] intersect plaque[i-1,j] == plaque[i,j] intersect plaque[i+1,j] )  xor % 
+  (plaque[i,j] intersect plaque[i,j-1] == plaque[i,j] intersect plaque[i,j+1] ) xor %
   
-  (plaque[i,j] intersect plaque[i-1,j] == plaque[i,j] intersect plaque[i,j+1] \/ card(plaque[i,j] intersect plaque[i-1,j]) == 1) xor %droite + bas
-  (plaque[i,j] intersect plaque[i-1,j] == plaque[i,j] intersect plaque[i,j-1] \/ card(plaque[i,j] intersect plaque[i-1,j]) == 1) xor  %droite + haut
+  (plaque[i,j] intersect plaque[i-1,j] == plaque[i,j] intersect plaque[i,j+1] ) xor %droite + bas
+  (plaque[i,j] intersect plaque[i-1,j] == plaque[i,j] intersect plaque[i,j-1] ) xor  %droite + haut
   
-  (plaque[i,j] intersect plaque[i+1,j] == plaque[i,j] intersect plaque[i,j+1] \/ card(plaque[i,j] intersect plaque[i+1,j]) == 1) xor %gauche + bas
-  (plaque[i,j] intersect plaque[i+1,j] == plaque[i,j] intersect plaque[i,j-1] \/ card(plaque[i,j] intersect plaque[i+1,j]) == 1)   %gauche + haut
+  (plaque[i,j] intersect plaque[i+1,j] == plaque[i,j] intersect plaque[i,j+1] ) xor %gauche + bas
+  (plaque[i,j] intersect plaque[i+1,j] == plaque[i,j] intersect plaque[i,j-1] )   %gauche + haut
 );
 
 %la on fait de même mais en vérifiant les bords
 constraint forall(i in 2..MCOMPLET-1)( 
   %bord gauche
-   (plaque[i,1] intersect plaque[i-1,1] == plaque[i,1] intersect plaque[i+1,1] \/ card(plaque[i,1] intersect plaque[i-1,1]) == 1) xor %vertical
-   (plaque[i,1] intersect plaque[i-1,1] == plaque[i,1] intersect plaque[i,2] \/ card(plaque[i,1] intersect plaque[i-1,1]) == 1) xor %bas droite
-   (plaque[i,1] intersect plaque[i+1,1] == plaque[i,1] intersect plaque[i,2] \/ card(plaque[i,1] intersect plaque[i+1,1]) == 1) %haut droite
+   (plaque[i,1] intersect plaque[i-1,1] == plaque[i,1] intersect plaque[i+1,1] ) xor %vertical
+   (plaque[i,1] intersect plaque[i-1,1] == plaque[i,1] intersect plaque[i,2] ) xor %bas droite
+   (plaque[i,1] intersect plaque[i+1,1] == plaque[i,1] intersect plaque[i,2] ) %haut droite
 );
 
 constraint forall(i in 2..MCOMPLET-1)(   
   %bord droit
-   (plaque[i,N] intersect plaque[i-1,N] == plaque[i,N] intersect plaque[i+1,N] \/ card(plaque[i,N] intersect plaque[i-1,N]) == 1) xor %vertical
-   (plaque[i,N] intersect plaque[i-1,N] == plaque[i,N] intersect plaque[i,N-1] \/ card(plaque[i,N] intersect plaque[i-1,N]) == 1) xor %bas gauche
-   (plaque[i,N] intersect plaque[i+1,N] == plaque[i,N] intersect plaque[i,N-1] \/ card(plaque[i,N] intersect plaque[i+1,N]) == 1) %haut gauche
+   (plaque[i,N] intersect plaque[i-1,N] == plaque[i,N] intersect plaque[i+1,N] ) xor %vertical
+   (plaque[i,N] intersect plaque[i-1,N] == plaque[i,N] intersect plaque[i,N-1] ) xor %bas gauche
+   (plaque[i,N] intersect plaque[i+1,N] == plaque[i,N] intersect plaque[i,N-1] ) %haut gauche
 );
 
+/*********************                                                                    *******************************/
 %On vérifie qu'il n'y a pas plus de deux lignes horizontal (cas no dog-legs) pour une liaison
 array[1..MAX] of var 0..N : liaison;
+
+constraint forall(a in 1..MAX)(
+  liaison[a] = 0
+);
 
 %on compte le nbr d'horizontal par liaison
 constraint forall(a in 1..MAX)(
